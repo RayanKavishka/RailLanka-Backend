@@ -1,6 +1,10 @@
 import bcrypt from 'bcryptjs';
 import UserModel, {IUser} from "../models/userModel";
+import jwt from 'jsonwebtoken';
 import AppError from "../errors/AppError";
+import {signAccessToken} from "../utils/jwtUtil";
+
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
 
 export const registerUser = async (user: IUser) => {
     console.log("Executes registerUser()");
@@ -25,7 +29,7 @@ export const registerUser = async (user: IUser) => {
         await newUser.save();
 
     } catch (error) {
-        console.error("Error in regiterUser()", error);
+        console.error("Error in regiterUser(): ", error);
         throw error;
     }
 }
@@ -57,7 +61,49 @@ export const login = async (auth: AuthDTO): Promise<IUser> => {
         return user;
 
     } catch (error) {
-        console.error("Error in login()", error);
+        console.error("Error in login(): ", error);
         throw error;
     }
 }
+
+export const getNewAccessToken = async (refreshToken: string): Promise<string> => {
+    console.log("Executes getNewAccessToken()");
+    try {
+        let payload: jwt.JwtPayload;
+
+        try {
+            payload = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as jwt.JwtPayload;
+
+        } catch {
+            throw new AppError(401, "Token is expired or Invalid token.");
+        }
+
+        const user = await UserModel.findById(payload?.sub);
+
+        if (!user) {
+            throw new AppError(401, "Token is expired or Invalid token.");
+        }
+
+        return signAccessToken(user);
+
+    } catch (error) {
+        console.error("Error in getNewAccessToken(): ", error);
+        throw error;
+    }
+}
+
+export const getMyDetails = async (userId: string): Promise<IUser> => {
+    try {
+        const user = await UserModel.findById(userId).select("-password");
+
+        if (!user) {
+            throw new AppError(404, "Related user not found.");
+        }
+
+        return user;
+
+    } catch (error) {
+        console.error("Error in getMyDetails(): ", error);
+        throw error;
+    }
+};
