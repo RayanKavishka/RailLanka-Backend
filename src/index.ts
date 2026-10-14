@@ -1,7 +1,10 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import connectDatabase from "./database";
+import errorHandler from "./middlewares/errorHandler";
+import authRouter from "./routes/authRoute";
+import configureSuperAdmin from "./configs/superAdminConfig";
+import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
@@ -17,7 +20,10 @@ app.use(cors({
 app.use(express.json());
 
 
+app.use("/api/v1/auth", authRouter);
 
+
+app.use(errorHandler);
 
 const serverStart = async () => {
     try {
@@ -26,6 +32,8 @@ const serverStart = async () => {
         app.listen(PORT, () => {
             console.log(`Server is listening on port: ${PORT}`);
         });
+
+        await configureSuperAdmin();
 
     } catch (error) {
         console.error('Failed to start the server:', error);
