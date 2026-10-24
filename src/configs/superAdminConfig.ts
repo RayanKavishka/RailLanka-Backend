@@ -4,6 +4,7 @@ import AppError from "../errors/AppError";
 
 const configureSuperAdmin = async (): Promise<void> => {
     try {
+        const name = process.env.SUPER_ADMIN_NAME;
         const email = process.env.SUPER_ADMIN_EMAIL?.trim().toLowerCase();
         const password = process.env.SUPER_ADMIN_PASSWORD;
         const phone = process.env.SUPER_ADMIN_PHONE;
@@ -23,7 +24,7 @@ const configureSuperAdmin = async (): Promise<void> => {
         const hashedPassword = await bcrypt.hash(password, 12);
 
         const superAdmin = new UserModel({
-            fullName: "Rayan Kavishka",
+            fullName: name,
             email,
             password: hashedPassword,
             phone,
