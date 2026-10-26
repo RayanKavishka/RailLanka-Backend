@@ -1,8 +1,9 @@
 import bcrypt from 'bcryptjs';
-import UserModel, {IUser} from "../models/userModel";
+import UserModel from "../models/userModel";
 import jwt from 'jsonwebtoken';
 import AppError from "../errors/AppError";
 import {signAccessToken} from "../utils/jwtUtil";
+import IUser from "../interfaces/IUser";
 
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
 

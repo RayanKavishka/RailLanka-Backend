@@ -1,7 +1,8 @@
-import { AuthRequest } from "./authenticateMiddleware";
-import { Response, NextFunction } from "express";
+import {AuthRequest} from "./authenticate";
+import {NextFunction, Response} from "express";
+import {UserRoles} from "../models/userModel";
 
-const authorization = (...roles: string[]) => {
+const authorize = (...roles: UserRoles[]) => {
     return (req: AuthRequest, res: Response, next: NextFunction) => {
 
         if (!req.user) {
@@ -21,4 +22,4 @@ const authorization = (...roles: string[]) => {
 }
 
 
-export default authorization;
+export default authorize;

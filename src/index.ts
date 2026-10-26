@@ -5,6 +5,7 @@ import errorHandler from "./middlewares/errorHandler";
 import authRouter from "./routes/authRoute";
 import configureSuperAdmin from "./configs/superAdminConfig";
 import dotenv from 'dotenv';
+import stationRouter from "./routes/stationRoute";
 dotenv.config();
 
 const app = express();
@@ -21,6 +22,7 @@ app.use(express.json());
 
 
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/stations", stationRouter);
 
 
 app.use(errorHandler);

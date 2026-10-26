@@ -2,7 +2,7 @@ import * as authService from '../services/authService';
 import { Request, Response, NextFunction } from "express";
 import {signAccessToken, signRefreshToken} from "../utils/jwtUtil";
 import AppError from "../errors/AppError";
-import {AuthRequest} from "../middlewares/authenticateMiddleware";
+import {AuthRequest} from "../middlewares/authenticate";
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
     await authService.registerUser(req.body);

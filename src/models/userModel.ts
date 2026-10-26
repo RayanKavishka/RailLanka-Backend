@@ -1,14 +1,5 @@
-
-import { Schema, model, Document } from "mongoose";
-
-export interface IUser extends Document {
-    fullName: string;
-    email: string;
-    password: string;
-    phone: string;
-    roles: UserRoles[];
-    isActive: boolean;
-}
+import { Schema, model } from "mongoose";
+import IUser from "../interfaces/IUser";
 
 export enum UserRoles {
     ADMIN = "ADMIN",
