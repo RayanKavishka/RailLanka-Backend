@@ -10,7 +10,12 @@ const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
 export const registerUser = async (user: IUser) => {
     console.log("Executes registerUser()");
     try {
-        const existingUser = await UserModel.findOne({ email: user.email });
+        const existingUser = await UserModel.findOne({
+            $or: [
+                { email: user.email },
+                { phone: user.phone }
+            ]
+        });
 
         if (existingUser) {
             throw new AppError(409, "User is already exist.");

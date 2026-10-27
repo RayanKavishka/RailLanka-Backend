@@ -63,7 +63,10 @@ export const getStationById = async (stationId: string): Promise<IStation> => {
             throw new AppError(400, "Station is required.");
         }
 
-        const station = await StationModel.findById(stationId);
+        const station = await StationModel.findOne({
+            _id: stationId,
+            isActive: true
+        });
 
         if (!station) {
             throw new AppError(404, "Sorry, related station is not found.");
@@ -81,7 +84,7 @@ export const getAllStations = async (): Promise<IStation[]> => {
     console.log("Executes getAllStations()");
     try {
 
-        return await StationModel.find()
+        return await StationModel.find({ isActive: true })
 
     } catch (error) {
         console.error("Error in getAllStations()", error);
