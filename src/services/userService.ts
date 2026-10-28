@@ -103,7 +103,7 @@ export const setStatusAsInactive = async (userId: string) => {
 export const getUserById = async (userId: string): Promise<IUser> => {
     console.log("Executes getUserById()");
     try {
-        const existingUser = await UserModel.findById(userId);
+        const existingUser = await UserModel.findById(userId).select("-password");
 
         if (!existingUser) {
             throw new AppError(404, "Sorry, related user is not found.");
@@ -125,7 +125,7 @@ export const getUsersByRole = async (role: UserRoles): Promise<IUser[]> => {
                 { roles:role },
                 { isActive: true }
             ]
-        });
+        }).select("-password");
 
         if (usersByRole.length === 0) {
             return [];
