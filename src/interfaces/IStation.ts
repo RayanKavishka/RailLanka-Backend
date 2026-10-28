@@ -11,5 +11,12 @@ interface IStation extends Document {
     isActive: boolean;
 }
 
+export interface INestedStation {
+    station: IStation | null;
+    arrivalTime: string;
+    departureTime: string;
+}
+
+
 
 export default IStation;

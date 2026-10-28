@@ -1,6 +1,7 @@
 import { model, Schema } from "mongoose";
 import IRoute from "../interfaces/IRoute";
 
+
 const routeSchema = new Schema<IRoute>(
     {
         routeName: {
@@ -9,6 +10,20 @@ const routeSchema = new Schema<IRoute>(
             trim: true,
             minlength: [6, "Route name must be at least 6 characters."],
             maxlength: [100, "Route name cannot exceed 100 characters."]
+        },
+
+        routeCode: {
+            type: String,
+            required: [true, "Route code is required."],
+            unique: true,
+            uppercase: true,
+            trim: true,
+            minlength: [2, "Route code must be at least 2 characters."],
+            maxlength: [10, "Route code cannot exceed 10 characters."],
+            match: [
+                /^[A-Z0-9]+$/,
+                "Route code can only contain letters and numbers."
+            ]
         },
 
         description: {
@@ -21,12 +36,6 @@ const routeSchema = new Schema<IRoute>(
             type: Number,
             required: [true, "Estimated route duration is required."],
             min: [0.01, "Estimated route duration must be greater than zero."]
-        },
-
-        isActive: {
-            type: Boolean,
-            required: true,
-            default: true
         }
     },
 

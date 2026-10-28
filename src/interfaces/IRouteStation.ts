@@ -1,12 +1,13 @@
 import mongoose from "mongoose";
 
 interface IRouteStation {
-    routeId: mongoose.Types.ObjectId,
+    route: mongoose.Types.ObjectId,
     stations: {
-        stationId: mongoose.Types.ObjectId,
+        station: mongoose.Types.ObjectId,
         arrivalTime: string,
         departureTime: string
     }[];
+    isActive: boolean;
 }
 
 

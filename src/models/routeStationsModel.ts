@@ -4,7 +4,7 @@ import IRouteStation from "../interfaces/IRouteStation";
 
 const routeStationSchema = new Schema<IRouteStation>(
     {
-        routeId: {
+        route: {
             type: Schema.Types.ObjectId,
             ref: "Route",
             required: [true, "Route is required."]
@@ -13,7 +13,7 @@ const routeStationSchema = new Schema<IRouteStation>(
         stations: {
             type: [
                 {
-                    stationId: {
+                    station: {
                         type: Schema.Types.ObjectId,
                         ref: "Station",
                         required: [true, "Station is required."]
@@ -44,6 +44,12 @@ const routeStationSchema = new Schema<IRouteStation>(
                 message: "A route must contain at least two stations."
             }
         },
+
+        isActive: {
+            type: Boolean,
+            required: true,
+            default: true
+        }
     },
 
     {
@@ -51,6 +57,6 @@ const routeStationSchema = new Schema<IRouteStation>(
     }
 );
 
-const RouteStationsModel = model<IRouteStation>("RouteStation", routeStationSchema);
+const RouteStationModel = model<IRouteStation>("RouteStation", routeStationSchema);
 
-export default RouteStationsModel;
+export default RouteStationModel;

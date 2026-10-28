@@ -50,7 +50,7 @@ export const updateUser = async (user: IUser) => {
         }
 
         const updatedUser = await UserModel.findByIdAndUpdate(
-            user._id.toString(),
+            user._id,
             {
                 $set: {
                     fullName: user.fullName,
