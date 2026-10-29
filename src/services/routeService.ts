@@ -33,7 +33,7 @@ export const addRoute = async (route: IRouteRequest) => {
             const savedRoute = await newRoute.save({ session });
 
             const newRouteStation = new RouteStationModel({
-                routeId: savedRoute._id,
+                route: savedRoute._id,
                 stations: route.stations,
                 isActive: true
             });
