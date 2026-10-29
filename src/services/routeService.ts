@@ -1,9 +1,8 @@
 import IRouteRequest from "../interfaces/request/IRouteRequest";
 import RouteModel from "../models/routeModel";
 import AppError from "../errors/AppError";
-import RouteStationModel from "../models/routeStationsModel";
+import RouteStationModel from "../models/routeStationModel";
 import mongoose from "mongoose";
-import RouteStationsModel from "../models/routeStationsModel";
 import IRoute from "../interfaces/IRoute";
 import IRouteResponse from "../interfaces/response/IRouteResponse";
 import { INestedStation } from "../interfaces/IStation";
@@ -85,7 +84,7 @@ export const updateRoute = async (route: IRouteRequest) => {
                 throw new AppError(404, "Sorry, related route is not found.");
             }
 
-            const updatedRouteStation = await RouteStationsModel.findOneAndUpdate(
+            const updatedRouteStation = await RouteStationModel.findOneAndUpdate(
                 { route: route.routeId },
                 {
                     $set: {
@@ -177,7 +176,7 @@ export const getRouteById = async (routeId: string): Promise<IRouteResponse> => 
 export const getAllRoutes = async (): Promise<IRouteResponse[]> => {
     console.log("Executes getAllRoutes()");
     try {
-        const allRoutes = await RouteStationsModel
+        const allRoutes = await RouteStationModel
             .find({ isActive: true })
             .populate<{ route: IRoute | null }>("route")
             .populate<{ stations: INestedStation[] }>({
@@ -215,6 +214,32 @@ export const getAllRoutes = async (): Promise<IRouteResponse[]> => {
 
     } catch (error) {
         console.error("Error in getAllRoutes()", error);
+        throw error;
+    }
+}
+
+export const setStatusAsInactive = async (routeId: string) => {
+    console.log("Executes setStatusAsInactive()");
+    try {
+        const updatedRoute = await RouteStationModel.findOneAndUpdate(
+            { route: routeId },
+            {
+                $set: {
+                    isActive: false
+                }
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (!updatedRoute) {
+            throw new AppError(404, "Sorry related route is not found.");
+        }
+
+    } catch (error) {
+        console.error("Error in setStatusAsInactive()", error);
         throw error;
     }
 }
