@@ -7,6 +7,8 @@ import configureSuperAdmin from "./configs/superAdminConfig";
 import stationRouter from "./routes/stationRoute";
 import userRouter from "./routes/userRoute";
 import routeRouter from "./routes/routeRoute";
+import journeyRouter from "./routes/journeyRoute";
+import paymentRouter from "./routes/paymentRoute";
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -21,12 +23,15 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/stations", stationRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/routes", routeRouter);
+app.use("/api/v1/journeys", journeyRouter);
+app.use("/api/v1/payments", paymentRouter);
 
 
 app.use(errorHandler);
@@ -35,7 +40,7 @@ const serverStart = async () => {
     try {
         await connectDatabase();
 
-        app.listen(PORT, () => {
+        app.listen(PORT as number, "0.0.0.0", () => {
             console.log(`Server is listening on port: ${PORT}`);
         });
 
