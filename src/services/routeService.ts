@@ -6,6 +6,21 @@ import mongoose from "mongoose";
 import IRoute from "../interfaces/IRoute";
 import IRouteResponse from "../interfaces/response/IRouteResponse";
 import { INestedStation } from "../interfaces/IStation";
+import IRouteStation from "../interfaces/IRouteStation";
+
+
+export type routeRequest = {
+    startStationId: string;
+    destinationStationId: string;
+    journeyDate: Date
+}
+
+export type filteredRouteResponse = {
+    route: IRoute,
+    stations: INestedStation[];
+
+    journeyDate: Date;
+}
 
 export const addRoute = async (route: IRouteRequest) => {
     console.log("Executes addRoute()");
@@ -240,6 +255,77 @@ export const setStatusAsInactive = async (routeId: string) => {
 
     } catch (error) {
         console.error("Error in setStatusAsInactive()", error);
+        throw error;
+    }
+}
+
+export const getRoutesByJourney = async ({
+    startStationId,
+    destinationStationId,
+    journeyDate
+}: routeRequest): Promise<filteredRouteResponse[]> => {
+
+    console.log("Executes getRoutesByJourney()");
+    type IPopulatedRouteStation = Omit<IRouteStation, "route"> & {
+        route: IRoute | null;
+    };
+
+    try {
+        const routeStations = await RouteStationModel.find({
+            isActive: true,
+            stations: {
+                $all: [
+                    { $elemMatch: { station: startStationId } },
+                    { $elemMatch: { station: destinationStationId } }
+                ]
+            }
+        })
+            .populate<{ route: IRoute | null }>({
+                path: "route"
+            })
+            .populate<{ stations: INestedStation[] }>({
+                path: "stations.station",
+                match: { isActive: true }
+            });
+
+        const validRoutes = routeStations.filter((route) => {
+
+            if (!route.route) {
+                return false;
+            }
+
+            const startIndex = route.stations.findIndex((item) =>
+                item.station?._id.toString() === startStationId.toString()
+            );
+
+            const destinationIndex = route.stations.findIndex((item) =>
+                item.station?._id.toString() === destinationStationId.toString()
+            );
+
+            return startIndex !== -1 &&
+                destinationIndex !== -1 &&
+                startIndex < destinationIndex;
+        });
+
+        return validRoutes.map((route) => {
+
+            const populatedRoute = route.route;
+
+            if (!populatedRoute) {
+                throw new Error("Route not found.");
+            }
+
+            const responseRoute: filteredRouteResponse = {
+                route: populatedRoute,
+                stations: route.stations,
+                journeyDate
+            };
+
+            return responseRoute;
+        });
+
+    } catch (error) {
+        console.log("Error in getRoutesByJourney()", error);
         throw error;
     }
 }

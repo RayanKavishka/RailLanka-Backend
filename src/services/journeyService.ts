@@ -1,4 +1,3 @@
-
 import ITicketBook from "../interfaces/request/ITicketBook";
 import JourneyModel, { TicketClass } from "../models/journeyModel";
 import mongoose from "mongoose";
@@ -229,39 +228,3 @@ export const bookingTickets = async (ticketData: ITicketBook) => {
         await session.endSession();
     }
 };
-
-
-
-
-
-// const routeStations = await RouteStationModel.find({
-//     isActive: true,
-//     stations: {
-//         $all: [
-//             { $elemMatch: { station: ticketData.startStation } },
-//             { $elemMatch: { station: ticketData.destinationStation } }
-//         ]
-//     }
-// });
-//
-// const validRoutes: IRouteStation[] = routeStations.filter((route) => {
-//     const startIndex: number = route.stations.findIndex((item) =>
-//         item.station.toString() === ticketData.startStation.toString()
-//     );
-//
-//     const destinationIndex:number = route.stations.findIndex((item) =>
-//         item.station.toString() === ticketData.destinationStation.toString()
-//     );
-//
-//     return startIndex < destinationIndex;
-// });
-
-
-// console.log("Executes bookingTicket()");
-// try {
-//
-//
-// } catch (error) {
-//     console.log("Error in bookingTicket()",error);
-//     throw error;
-// }

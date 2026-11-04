@@ -84,7 +84,7 @@ export const getAllStations = async (): Promise<IStation[]> => {
     console.log("Executes getAllStations()");
     try {
 
-        return await StationModel.find({ isActive: true })
+        return await StationModel.find({ isActive: true }).sort({ stationName: 1 });
 
     } catch (error) {
         console.error("Error in getAllStations()", error);

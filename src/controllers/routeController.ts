@@ -3,6 +3,7 @@ import * as routeService from "../services/routeService";
 import IRouteRequest from "../interfaces/request/IRouteRequest";
 import mongoose from "mongoose";
 import IRouteResponse from "../interfaces/response/IRouteResponse";
+import {routeRequest} from "../services/routeService";
 
 
 export const saveRoute = async (req: Request, res: Response) => {
@@ -62,3 +63,36 @@ export const setStatusAsInactive = async (req: Request, res: Response) => {
         message: "Operation success."
     });
 }
+
+export const getRoutesByJourney = async (req: Request, res: Response) => {
+    const { startStationId, destinationStationId, journeyDate } = req.query;
+
+    if (
+        typeof startStationId !== "string" ||
+        typeof destinationStationId !== "string" ||
+        typeof journeyDate !== "string"
+    ) {
+        return res.status(400).json({
+            message: "Invalid journey parameters."
+        });
+    }
+
+    const jDate = new Date(journeyDate);
+
+    if (isNaN(jDate.getTime())) {
+        return res.status(400).json({
+            message: "Invalid journey date."
+        });
+    }
+
+    const responseRoutes = await routeService.getRoutesByJourney({
+        startStationId,
+        destinationStationId,
+        journeyDate: jDate
+    });
+
+    res.status(200).json({
+        message: "Operation success.",
+        body: responseRoutes
+    });
+};

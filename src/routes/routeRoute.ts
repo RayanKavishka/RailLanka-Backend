@@ -22,10 +22,10 @@ routeRouter.put(
 );
 
 routeRouter.get(
-    "/:routeId",
+    "/filter-routes",
     authenticate,
-    authorize(UserRoles.ADMIN, UserRoles.PASSENGER),
-    routeController.getRouteById
+    authorize(UserRoles.PASSENGER),
+    routeController.getRoutesByJourney
 );
 
 routeRouter.get(
@@ -33,6 +33,13 @@ routeRouter.get(
     authenticate,
     authorize(UserRoles.ADMIN, UserRoles.PASSENGER),
     routeController.getAllRoutes
+);
+
+routeRouter.get(
+    "/:routeId",
+    authenticate,
+    authorize(UserRoles.ADMIN, UserRoles.PASSENGER),
+    routeController.getRouteById
 );
 
 routeRouter.patch(
