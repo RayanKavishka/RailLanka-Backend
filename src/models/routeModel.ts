@@ -15,7 +15,6 @@ const routeSchema = new Schema<IRoute>(
         routeCode: {
             type: String,
             required: [true, "Route code is required."],
-            unique: true,
             uppercase: true,
             trim: true,
             minlength: [2, "Route code must be at least 2 characters."],

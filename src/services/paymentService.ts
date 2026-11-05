@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import QRCode from "qrcode";
 import PaymentModel, { PayStatus } from "../models/paymentModel";
 import TicketModel from "../models/ticketModel";
 import UserModel from "../models/userModel";
@@ -97,59 +98,75 @@ export const handlePaymentNotification = async (
             return;
         }
 
-        const payment = await PaymentModel.findById(paymentId);
+        const payment = await PaymentModel.findOneAndUpdate(
+            {
+                _id: paymentId,
+                paymentStatus: PayStatus.PAID,
+                confirmationSentAt: null
+            },
+            { $set: { confirmationSentAt: new Date() } },
+            { returnDocument: "after" }
+        );
 
-        if (!payment || payment.paymentStatus !== PayStatus.PAID) {
-            throw new AppError(404, "Confirmed payment not found.");
+        if (!payment) {
+            console.log("Payment already confirmed, skipping:", paymentId);
+            return;
         }
 
-        const ticket = await TicketModel.findById(payment.ticket);
+        try {
+            const ticket = await TicketModel.findById(payment.ticket);
 
-        if (!ticket) {
-            throw new AppError(404, "Ticket not found.");
-        }
-
-        const passenger = await UserModel.findById(ticket.passenger);
-
-        if (!passenger) {
-            throw new AppError(404, "Passenger not found.");
-        }
-
-        const existingQR = await QRModel.findOne({
-            ticket: ticket._id
-        });
-
-        let expiresAt = existingQR?.expiresAt;
-
-        if (!expiresAt) {
-            const journey = await JourneyModel.findById(ticket.journey);
-
-            if (!journey) {
-                throw new AppError(404, "Related journey not found.");
+            if (!ticket) {
+                throw new AppError(404, "Ticket not found.");
             }
 
-            expiresAt = journey.journeyDate;
+            const passenger = await UserModel.findById(ticket.passenger);
+
+            if (!passenger) {
+                throw new AppError(404, "Passenger not found.");
+            }
+
+            const existingQR = await QRModel.findOne({
+                ticket: ticket._id
+            });
+
+            let expiresAt = existingQR?.expiresAt;
+
+            if (!expiresAt) {
+                const journey = await JourneyModel.findById(ticket.journey);
+
+                if (!journey) {
+                    throw new AppError(404, "Related journey not found.");
+                }
+
+                expiresAt = journey.journeyDate;
+            }
+
+            const qr = await createTicketQR({
+                ticketId: ticket._id.toString(),
+                passengerId: passenger._id.toString(),
+                expiresAt
+            });
+
+            await sendTicketConfirmationEmail({
+                recipient: passenger.email,
+                passengerId: passenger._id.toString(),
+                passengerName: passenger.fullName,
+                ticketId: ticket._id.toString(),
+                totalPrice: payment.amount,
+                qrImage: qr.qrImage
+            });
+        } catch (confirmError) {
+
+            await PaymentModel.updateOne(
+                { _id: paymentId },
+                { $set: { confirmationSentAt: null } }
+            );
+            throw confirmError;
         }
-
-        const qr = await createTicketQR({
-            ticketId: ticket._id.toString(),
-            passengerId: passenger._id.toString(),
-            expiresAt
-        });
-
-        await sendTicketConfirmationEmail({
-            recipient: passenger.email,
-            passengerId: passenger._id.toString(),
-            passengerName: passenger.fullName,
-            ticketId: ticket._id.toString(),
-            totalPrice: payment.amount,
-            qrImage: qr.qrImage
-        });
-
     } catch (error) {
         console.error("Error in handlePaymentNotification()", error);
         throw error;
-
     } finally {
         await session.endSession();
     }

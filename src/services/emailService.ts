@@ -46,7 +46,7 @@ export const sendTicketConfirmationEmail = async ({
                 emailStatus: EmailStatus.PENDING
             }
         },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
+        { upsert: true, returnDocument: "after", setDefaultsOnInsert: true }
     );
 
     if (emailRecord.emailStatus === EmailStatus.SENT) {
@@ -71,6 +71,13 @@ export const sendTicketConfirmationEmail = async ({
 
             subject: EMAIL_SUBJECT,
 
+            attachment: [
+                {
+                    name: "raillanka-ticket-qr.png",
+                    content: qrBase64
+                }
+            ],
+
             htmlContent: `
             <!DOCTYPE html>
             <html lang="en">
@@ -84,7 +91,7 @@ export const sendTicketConfirmationEmail = async ({
 
               <!-- Preheader (inbox preview text) -->
               <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">
-                Your ticket ${ticketId} is confirmed. Show the QR code when boarding.
+                Your ticket ${ticketId} is confirmed. Your QR code is attached to this email.
               </div>
 
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#eef2f7; padding:32px 12px;">
@@ -136,22 +143,20 @@ export const sendTicketConfirmationEmail = async ({
                         </td>
                       </tr>
 
-                      <!-- QR section -->
+                      <!-- QR section (attachment) -->
                       <tr>
                         <td align="center" style="padding:24px 32px 8px;">
                           <div style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:6px;">Your Ticket QR Code</div>
                           <div style="font-size:14px; color:#64748b; margin-bottom:18px;">Show this to the ticket inspector when boarding.</div>
 
-                          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff; border:2px solid #e2e8f0; border-radius:16px;">
+                          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background-color:#f0f9ff; border:2px solid #bfdbfe; border-radius:16px;">
                             <tr>
-                              <td style="padding:14px;">
-                                <img
-                                  src="data:image/png;base64,${qrBase64}"
-                                  alt="RailLanka Ticket QR Code"
-                                  width="220"
-                                  height="220"
-                                  style="display:block; width:220px; height:220px; border:0;"
-                                />
+                              <td align="center" style="padding:22px 28px; font-size:15px; font-weight:600; color:#1e3a8a;">
+                                &#128206; Your QR code is attached to this email<br />
+                                <span style="font-size:13px; font-weight:400; color:#64748b;">
+                                  File name: raillanka-ticket-qr.png<br />
+                                  You can also open it any time under My Tickets.
+                                </span>
                               </td>
                             </tr>
                           </table>

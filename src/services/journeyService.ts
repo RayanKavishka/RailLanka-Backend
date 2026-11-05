@@ -15,6 +15,57 @@ type CalPrice = {
     ticketCount: number;
 };
 
+export type TicketPricesReq = {
+    startStationId: string;
+    destinationStationId: string;
+}
+
+const calculatePricesForClasses = (distanceKm: number) => {
+    let firstClsPricePerKm: number = 0;
+    let secondClsPricePerKm: number = 0;
+    let thirdClsPricePerKm: number = 0;
+
+    if (0 < distanceKm && distanceKm <= 10) {
+        firstClsPricePerKm = 10.40;
+        secondClsPricePerKm = 5.20;
+        thirdClsPricePerKm = 2.60;
+
+    } else if (distanceKm <= 50) {
+        firstClsPricePerKm = 9.60;
+        secondClsPricePerKm = 4.80;
+        thirdClsPricePerKm = 2.40;
+
+    } else if (distanceKm <= 100) {
+        firstClsPricePerKm = 6.80;
+        secondClsPricePerKm = 3.40;
+        thirdClsPricePerKm = 1.70;
+
+    } else if (distanceKm <= 200) {
+        firstClsPricePerKm = 5.60;
+        secondClsPricePerKm = 2.80;
+        thirdClsPricePerKm = 1.40;
+
+    } else {
+        firstClsPricePerKm = 4.40;
+        secondClsPricePerKm = 2.20;
+        thirdClsPricePerKm = 1.10;
+    }
+
+    if (firstClsPricePerKm === 0 || secondClsPricePerKm === 0 || thirdClsPricePerKm === 0) {
+        throw new AppError(400, "Invalid ticket class.");
+    }
+
+    const firstClsTicketPrice = Number((distanceKm * firstClsPricePerKm).toFixed(2));
+    const secondClsTicketPrice = Number((distanceKm * secondClsPricePerKm).toFixed(2));
+    const thirdClsTicketPrice = Number((distanceKm * thirdClsPricePerKm).toFixed(2));
+
+    return {
+        firstClsTicketPrice,
+        secondClsTicketPrice,
+        thirdClsTicketPrice
+    };
+};
+
 const calculateTicketsPrice = ({
    distanceKm,
    classType,
@@ -192,8 +243,8 @@ export const bookingTickets = async (ticketData: ITicketBook) => {
 
             const checkoutData = {
                 merchant_id: payhereConfig.merchantId,
-                return_url: `${process.env.FRONTEND_URL}/payment/success`,
-                cancel_url: `${process.env.FRONTEND_URL}/payment/cancel`,
+                return_url: `${process.env.FRONTEND_URL}/passenger/payment-success`,
+                cancel_url: `${process.env.FRONTEND_URL}/passenger/payment-cancel`,
                 notify_url: `${process.env.BACKEND_URL}/api/v1/payments/notify`,
                 first_name: firstName,
                 last_name: lastName,
@@ -228,3 +279,22 @@ export const bookingTickets = async (ticketData: ITicketBook) => {
         await session.endSession();
     }
 };
+
+export const getTicketPrices = async ({
+    startStationId,
+    destinationStationId,
+
+}: TicketPricesReq) => {
+    console.log("Executes getTicketPrices()");
+    try {
+        const journeyData = await getDataFromOSRM(startStationId, destinationStationId);
+
+        const distanceKm: number = journeyData.routes[0].distance / 1000;
+
+        return calculatePricesForClasses(distanceKm);
+
+    } catch (error) {
+        console.error("Error in getTicketPrices()", error);
+        throw error;
+    }
+}
