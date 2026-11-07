@@ -21,7 +21,7 @@ userRouter.put(
 );
 
 userRouter.patch(
-    "/",
+    "/:userId",
     authenticate,
     authorize(UserRoles.ADMIN),
     userController.setStatusAsInactive

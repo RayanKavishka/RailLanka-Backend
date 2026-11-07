@@ -14,7 +14,7 @@ export const saveAdminOrInspector = async (user: IUser) => {
         });
 
         if (existingUser) {
-            throw new AppError(409, "User is already exist.");
+            throw new AppError(409, "Email or phone already in use.");
         }
 
         const hashedPassword = await bcrypt.hash(user.password, 12);
@@ -131,7 +131,9 @@ export const getUsersByRole = async (role: UserRoles): Promise<IUser[]> => {
             return [];
         }
 
-        return usersByRole;
+        return usersByRole.filter((user) => {
+            return user.email !== process.env.SUPER_ADMIN_EMAIL;
+        });
 
     } catch (error) {
         console.error("Error in getUsersByRole()", error);
