@@ -1,11 +1,12 @@
-import { randomBytes } from "node:crypto";
+import {randomBytes} from "node:crypto";
 import QRCode from "qrcode";
-import QRModel from "../models/qrModel";
+import QRModel, {QRStatus} from "../models/qrModel";
 import mongoose from "mongoose";
 import AppError from "../errors/AppError";
 import PaymentModel, {PayStatus} from "../models/paymentModel";
 import TicketModel from "../models/ticketModel";
 import UserModel from "../models/userModel";
+import IQR from "../interfaces/IQR";
 
 interface CreateTicketQR {
     ticketId: string;
@@ -97,3 +98,62 @@ export const getPaymentTicket = async (paymentId: string, userId: string) => {
         qrStatus
     };
 };
+
+export const verifyQR = async (qrToken: string): Promise<string> => {
+    console.log("Executes verifyQR()");
+    try {
+        const now = new Date();
+
+        const updatedQR = await QRModel.findOneAndUpdate(
+            {
+                qrToken,
+                status: QRStatus.ACTIVE,
+                expiresAt: { $gt: now }
+            },
+            {
+                $set: { status: QRStatus.USED }
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (updatedQR) {
+            return "Ticket is verified.";
+        }
+
+        const existingQR = await QRModel.findOne({ qrToken });
+
+        if (!existingQR) {
+            throw new AppError(404, "Invalid QR code.");
+        }
+
+        if (existingQR.status === QRStatus.USED) {
+            return "Ticket has already been used.";
+        }
+
+        if (existingQR.status === QRStatus.EXPIRED ||
+            existingQR.expiresAt <= now) {
+
+            await QRModel.updateOne(
+                {
+                    _id: existingQR._id,
+                    status: QRStatus.ACTIVE,
+                    expiresAt: { $lte: now }
+                },
+                {
+                    $set: { status: QRStatus.EXPIRED }
+                }
+            );
+
+            return "Ticket has expired.";
+        }
+
+        return "Ticket is not active.";
+
+    } catch (error) {
+        console.error("Error in verifyQR()", error);
+        throw error;
+    }
+}

@@ -9,8 +9,10 @@ import userRouter from "./routes/userRoute";
 import routeRouter from "./routes/routeRoute";
 import journeyRouter from "./routes/journeyRoute";
 import paymentRouter from "./routes/paymentRoute";
+import qrRouter from "./routes/qrRoute";
 import dotenv from 'dotenv';
 dotenv.config();
+
 import dns from 'node:dns';
 import net from 'node:net';
 
@@ -64,6 +66,7 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/routes", routeRouter);
 app.use("/api/v1/journeys", journeyRouter);
 app.use("/api/v1/payments", paymentRouter);
+app.use("/api/v1/qrs", qrRouter);
 
 
 app.use(errorHandler);
@@ -72,7 +75,7 @@ const serverStart = async () => {
     try {
         await connectDatabase();
 
-        app.listen(PORT as number, "0.0.0.0", () => {
+        app.listen(PORT, () => {
             console.log(`Server is listening on port: ${PORT}`);
         });
 
