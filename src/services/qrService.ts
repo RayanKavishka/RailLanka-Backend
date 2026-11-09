@@ -58,7 +58,6 @@ export const createTicketQR = async ({
     };
 };
 
-
 export const getPaymentTicket = async (paymentId: string, userId: string) => {
     if (!mongoose.isValidObjectId(paymentId)) {
         throw new AppError(404, "Payment not found.");
@@ -97,7 +96,7 @@ export const getPaymentTicket = async (paymentId: string, userId: string) => {
         qrImage,
         qrStatus
     };
-};
+}
 
 export const verifyQR = async (qrToken: string): Promise<string> => {
     console.log("Executes verifyQR()");

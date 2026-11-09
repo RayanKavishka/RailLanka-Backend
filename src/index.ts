@@ -10,6 +10,7 @@ import routeRouter from "./routes/routeRoute";
 import journeyRouter from "./routes/journeyRoute";
 import paymentRouter from "./routes/paymentRoute";
 import qrRouter from "./routes/qrRoute";
+import ticketRouter from "./routes/ticketRoute";
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -67,6 +68,7 @@ app.use("/api/v1/routes", routeRouter);
 app.use("/api/v1/journeys", journeyRouter);
 app.use("/api/v1/payments", paymentRouter);
 app.use("/api/v1/qrs", qrRouter);
+app.use("/api/v1/tickets", ticketRouter);
 
 
 app.use(errorHandler);
