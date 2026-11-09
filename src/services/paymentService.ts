@@ -10,6 +10,7 @@ import { sendTicketConfirmationEmail } from "./emailService";
 import JourneyModel from "../models/journeyModel";
 import IPaymentsResponse, { PaymentDetails } from "../interfaces/response/IPaymentsResponse";
 import PopulatedPayment from "../interfaces/PopulatedPayment";
+import getJourneyName from "../utils/getJourneyName";
 
 interface IPayHereNotification {
     merchant_id: string;
@@ -202,16 +203,24 @@ export const getAllPayments = async (page: number, size: number): Promise<IPayme
         const totalPayments = await PaymentModel.countDocuments();
         const totalPages = Math.ceil(totalPayments / size);
 
-        const payments: PaymentDetails[] = allPaymentsForPage.map(
-            (paymentDetail: PopulatedPayment) => ({
-                journey: paymentDetail.ticket.journey.route.routeName,
-                passengerEmail: paymentDetail.ticket.passenger.email,
-                amount: paymentDetail.amount,
-                payMethod: paymentDetail.paymentMethod,
-                paymentDate: paymentDetail.createdAt,
-                paymentStatus: paymentDetail.paymentStatus
+        const payments: PaymentDetails[] = await Promise.all(
+
+            allPaymentsForPage.map(async (paymentDetail: PopulatedPayment) => {
+                const journeyN = await getJourneyName(
+                    paymentDetail.ticket.journey.startStation,
+                    paymentDetail.ticket.journey.destinationStation
+                );
+
+                return {
+                    journey: journeyN,
+                    passengerEmail: paymentDetail.ticket.passenger.email,
+                    amount: paymentDetail.amount,
+                    payMethod: paymentDetail.paymentMethod,
+                    paymentDate: paymentDetail.createdAt,
+                    paymentStatus: paymentDetail.paymentStatus
+                }
             })
-        );
+        )
 
         return {
             payments: payments,
