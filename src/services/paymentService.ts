@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
-import QRCode from "qrcode";
-import PaymentModel, { PayStatus } from "../models/paymentModel";
+import PaymentModel, {PayMethod, PayStatus} from "../models/paymentModel";
 import TicketModel from "../models/ticketModel";
 import UserModel from "../models/userModel";
 import QRModel from "../models/qrModel";
@@ -9,6 +8,8 @@ import { verifyPayHereNotification } from "./payhereService";
 import { createTicketQR } from "./qrService";
 import { sendTicketConfirmationEmail } from "./emailService";
 import JourneyModel from "../models/journeyModel";
+import IPaymentsResponse, { PaymentDetails } from "../interfaces/response/IPaymentsResponse";
+import PopulatedPayment from "../interfaces/PopulatedPayment";
 
 interface IPayHereNotification {
     merchant_id: string;
@@ -171,3 +172,59 @@ export const handlePaymentNotification = async (
         await session.endSession();
     }
 };
+
+export const getAllPayments = async (page: number, size: number): Promise<IPaymentsResponse> => {
+    console.log("Executes getAllPayments()");
+    try {
+        const offset: number = (page - 1) * size;
+
+        const allPaymentsForPage: PopulatedPayment[] = await PaymentModel
+            .find()
+            .populate({
+                path: "ticket",
+                populate: [
+                    {
+                        path: "passenger"
+                    },
+                    {
+                        path: "journey",
+                        populate: {
+                            path: "route"
+                        }
+                    }
+                ]
+            })
+            .sort({ createdAt: -1 })
+            .skip(offset)
+            .limit(size)
+            .lean<PopulatedPayment[]>();
+
+        const totalPayments = await PaymentModel.countDocuments();
+        const totalPages = Math.ceil(totalPayments / size);
+
+        const payments: PaymentDetails[] = allPaymentsForPage.map(
+            (paymentDetail: PopulatedPayment) => ({
+                journey: paymentDetail.ticket.journey.route.routeName,
+                passengerEmail: paymentDetail.ticket.passenger.email,
+                amount: paymentDetail.amount,
+                payMethod: paymentDetail.paymentMethod,
+                paymentDate: paymentDetail.createdAt,
+                paymentStatus: paymentDetail.paymentStatus
+            })
+        );
+
+        return {
+            payments: payments,
+            pagination: {
+                currentPage: page,
+                pageSize: size,
+                totalPayments: totalPayments,
+                totalPages: totalPages
+            }
+        }
+
+    } catch (error) {
+        console.error("Error in getAllPayments()", error);
+        throw error;
+    }
+}

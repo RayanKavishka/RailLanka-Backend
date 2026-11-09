@@ -18,4 +18,11 @@ paymentRouter.get(
     paymentController.getPaymentTicket
 );
 
+paymentRouter.get(
+    "/records",
+    authenticate,
+    authorize(UserRoles.ADMIN),
+    paymentController.getAllPaymentsByPage
+)
+
 export default paymentRouter;

@@ -23,5 +23,34 @@ export const getPaymentTicket = async (req: AuthRequest, res: Response) => {
         req.user!.sub
     );
 
-    res.status(200).json({ message: "Operation success.", body });
+    res.status(200).json({
+        message: "Operation success.",
+        body
+    });
 };
+
+export const getAllPaymentsByPage = async (req: AuthRequest, res: Response) => {
+    const { page, size } = req.query;
+
+    const pageN = Number(page ?? 1);
+    const sizeN = Number(size ?? 10);
+
+    if (
+        !Number.isInteger(pageN) ||
+        !Number.isInteger(sizeN) ||
+        pageN < 1 ||
+        sizeN < 1 ||
+        sizeN > 7
+    ) {
+        return res.status(400).json({
+            message: "Something went wrong."
+        });
+    }
+
+    const paymentsRes = await paymentService.getAllPayments(pageN, sizeN);
+
+    res.status(200).json({
+        message: "Operation success.",
+        body: paymentsRes
+    });
+}
