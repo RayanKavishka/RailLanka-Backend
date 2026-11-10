@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import {signAccessToken, signRefreshToken} from "../utils/jwtUtil";
 import AppError from "../errors/AppError";
 import {AuthRequest} from "../middlewares/authenticate";
+import {type} from "node:os";
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
     await authService.registerUser(req.body);
@@ -53,5 +54,48 @@ export const getMyDetails = async (req: AuthRequest, res: Response, next: NextFu
     res.status(200).json({
         message: "Operation success.",
         body: user
+    });
+}
+
+export const forgotPassword = async (req: Request, res: Response) => {
+    const { email } = req.body;
+
+    await authService.forgotPassword(email);
+
+    res.status(200).json({
+        message: "You have been received 6 digit OTP code."
+    });
+}
+
+export const verifyOTPForResetPassword = async (req: Request, res: Response) => {
+    const { email, otp } = req.query;
+
+    if (typeof email !== "string" || typeof otp !== "string") {
+        return res.status(400).json({
+            message: "Invalid format."
+        });
+    }
+
+    const resetToken = await authService.verifyOTP(email, otp);
+
+    res.status(200).json({
+        message: "OTP verified successfully!",
+        body: resetToken
+    });
+}
+
+export const resetPassword = async (req: Request, res: Response) => {
+    const { userEmail, resetToken, newPassword } = req.body;
+
+    if (typeof resetToken !== "string" || typeof newPassword !== "string") {
+        return res.status(400).json({
+            message: "Invalid format."
+        });
+    }
+
+    await authService.resetPassword(userEmail, resetToken, newPassword);
+
+    res.status(200).json({
+        message: "Password changed successfully!"
     });
 }
