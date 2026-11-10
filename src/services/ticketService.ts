@@ -21,9 +21,12 @@ export const geAllTicketsByPassengerId = async (passengerId: string): Promise<IT
         const result: ITicketResponse[] = await session.withTransaction(async () => {
             const tickets: PopulatedTicket[] = await TicketModel.find({
                 passenger: passengerId,
-            }).populate<{ journey: IJourney }>({
+            })
+            .populate<{ journey: IJourney }>({
                 path: "journey"
-            }).sort({ createdAt: -1 });
+            })
+            .sort({ createdAt: -1 })
+            .lean<PopulatedTicket[]>();
 
             if (tickets.length === 0) {
                 throw new AppError(404, "No tickets found for this passenger.");

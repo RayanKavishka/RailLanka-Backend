@@ -6,7 +6,6 @@ import AppError from "../errors/AppError";
 import PaymentModel, {PayStatus} from "../models/paymentModel";
 import TicketModel from "../models/ticketModel";
 import UserModel from "../models/userModel";
-import IQR from "../interfaces/IQR";
 
 interface CreateTicketQR {
     ticketId: string;
