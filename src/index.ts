@@ -14,38 +14,6 @@ import ticketRouter from "./routes/ticketRoute";
 import dotenv from 'dotenv';
 dotenv.config();
 
-import dns from 'node:dns';
-import net from 'node:net';
-
-const resolver = new dns.Resolver();
-resolver.setServers(['8.8.8.8', '1.1.1.1']);
-
-const systemLookup = dns.lookup;
-
-(dns as any).lookup = (hostname: string, options: any, callback: any) => {
-    if (typeof options === 'function') {
-        callback = options;
-        options = {};
-    } else if (typeof options === 'number') {
-        options = { family: options };
-    }
-
-    if (hostname === 'localhost' || net.isIP(hostname)) {
-        return systemLookup(hostname, options, callback);
-    }
-
-    resolver.resolve4(hostname, (error, addresses) => {
-        if (error || addresses.length === 0) {
-            return systemLookup(hostname, options, callback); // fall back to the normal lookup
-        }
-
-        if (options.all) {
-            callback(null, addresses.map((address) => ({ address, family: 4 })));
-        } else {
-            callback(null, addresses[0], 4);
-        }
-    });
-};
 
 export const app = express();
 
