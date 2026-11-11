@@ -23,6 +23,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      MONGODB_ATLAS_URI: ${{ secrets.MONGODB_ATLAS_URI }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
