@@ -25,6 +25,10 @@ jobs:
 
     env:
       MONGODB_ATLAS_URI: ${{ secrets.MONGODB_ATLAS_URI }}
+      SUPER_ADMIN_EMAIL: ${{ secrets.SUPER_ADMIN_EMAIL }}
+      SUPER_ADMIN_NAME: ${{ secrets.SUPER_ADMIN_NAME }}
+      SUPER_ADMIN_PASSWORD: ${{ secrets.SUPER_ADMIN_PASSWORD }}
+      SUPER_ADMIN_PHONE: ${{ secrets.SUPER_ADMIN_PHONE }}
 
     steps:
       - name: Checkout repository
