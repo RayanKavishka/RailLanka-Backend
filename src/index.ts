@@ -47,7 +47,7 @@ const systemLookup = dns.lookup;
     });
 };
 
-const app = express();
+export const app = express();
 
 const PORT = process.env.PORT || 5000;
 
@@ -60,6 +60,11 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        message: "ok"
+    });
+});
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/stations", stationRouter);
@@ -77,7 +82,7 @@ const serverStart = async () => {
     try {
         await connectDatabase();
 
-        app.listen(PORT, () => {
+        app.listen(PORT as number, '0.0.0.0', () => {
             console.log(`Server is listening on port: ${PORT}`);
         });
 
