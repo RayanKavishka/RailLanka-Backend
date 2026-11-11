@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const connectDatabase = async (): Promise<void> => {
     try {
-        await mongoose.connect(process.env.MONGODB_ATLAS_URI as string);
+        await mongoose.connect(process.env.MONGODB_ATLAS_URI || "");
         console.log("MongoDB is connected successfully.");
 
     } catch (error) {
