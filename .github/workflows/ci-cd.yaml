@@ -93,7 +93,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Stage 3: Deploy to Enzonic
+  # Stage 3: Deploy to Render
   deploy:
     needs: docker
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -103,14 +103,11 @@ jobs:
     environment: production
 
     steps:
-      - name: Deploy to Enzonic
-        uses: enzonic/deploy-action@v1
-        id: enzonic
-        with:
-          token: ${{ secrets.ENZONIC_TOKEN }}
-          project: raillankaapi
-
-      - name: Show deployment URL
-        run: echo "Deployed at ${{ steps.enzonic.outputs.url }}"
+      - name: Trigger Render deployment
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          curl --fail --silent --show-error \
+            -X POST "$RENDER_DEPLOY_HOOK_URL"
 
 
